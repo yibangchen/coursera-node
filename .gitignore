@@ -1,5 +1,5 @@
-# manual ignore some files
-/hw2/mongodb  #mongodb data
+# manually ignore some files
+/hw2/mongodb/*
 
 # Logs
 logs
