@@ -1,3 +1,6 @@
+# manual ignore some files
+/hw2/mongodb  #mongodb data
+
 # Logs
 logs
 *.log
