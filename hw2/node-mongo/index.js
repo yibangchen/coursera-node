@@ -4,7 +4,8 @@ const assert = require('assert');
 const dboper = require('./operations');
 const url = 'mongodb://localhost:27017';
 
-MongoClient.connect(url).then((client) => {
+MongoClient.connect(url)
+.then((client) => {
 
 	console.log('Connected correctly to the server');
 	var db = client.db('conFusion');
