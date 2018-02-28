@@ -11,9 +11,6 @@ dishRouter.route('/')
     res.setHeader('Content-Type', 'text/plain');
     next();
 })
-.get((req, res, next) => {
-    
-})
 .get((req,res,next) => {
     res.end('Will send all the dishes to you!');
 })
