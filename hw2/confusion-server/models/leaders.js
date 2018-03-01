@@ -26,8 +26,7 @@ const leadSchema = new Schema({
     feature: {
     	type: Boolean,
     	default: false
-    },
-    comments: [commentSchema]	// sub document
+    }
 },{
     timestamps: true
 });
