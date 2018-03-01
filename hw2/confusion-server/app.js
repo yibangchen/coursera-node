@@ -40,34 +40,49 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));	// FOR Forms
-app.use(cookieParser());
+app.use(cookieParser('abcde-12345-yuidk-14235')); // set cookie secret
 
 //Authentication BEFORE client fetching data
 function auth(req, res, next) {
   console.log(req.headers);
 
-  var authHeader = req.headers.authorization;
+  if (! req.signedCookies.user) {
+    var authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    // client did not provide login
-    var err = new Error("You need to provide credentials");
-    res.setHeader('WWW-Authenticate', 'Basic');
-    err.status = 401;
-    next(err);  // skip all the way to error handler
-  }
+    if (!authHeader) {
+      // client did not provide login
+      var err = new Error("You need to provide credentials");
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      next(err);  // skip all the way to error handler
+    }
 
-  var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':'); // get the encoded string
-  var username = auth[0];
-  var password = auth[1];
+    var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':'); // get the encoded string
+    var username = auth[0];
+    var password = auth[1];
 
-  if (username === 'admin' && password === 'password') {
-    next(); // pass to next middleware
+    if (username === 'admin' && password === 'password') {
+      // SET COOKIE here
+      res.cookie('user','admin',{signed: true});
+      next(); // pass to next middleware
+    } else {
+      var err = new Error("Not authorized");
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      next(err);
+    }
   } else {
-    var err = new Error("Not authorized");
-    res.setHeader('WWW-Authenticate', 'Basic');
-    err.status = 401;
-    next(err);
+    //already set cookie
+    if (req.signedCookies.user === 'admin'){
+      next();
+    } else {
+      var err = new Error("You are not athenticated");
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      next(err);  // skip all the way to error handler      
+    }
   }
+
 }
 
 app.use(auth);
