@@ -39,10 +39,6 @@ db.once('open', () => {
         return dish.save();
         // return db.collection('dishes').drop();
     })
-    .then((dish) => {
-        console.log(dish);
-        return db.collection('dishes').drop();
-    })
     .then(() => {
         return db.close();
     })
