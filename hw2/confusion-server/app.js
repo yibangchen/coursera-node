@@ -4,6 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -40,13 +42,21 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));	// FOR Forms
-app.use(cookieParser('abcde-12345-yuidk-14235')); // set cookie secret
+//app.use(cookieParser('abcde-12345-yuidk-14235')); // set cookie secret
+app.use(session({
+  name: 'session-id',
+  secret: 'abcde-12345-yuidk-14235',
+  saveUninitialized: false,
+  resave: false,
+  store: new FileStore()
+}));
 
 //Authentication BEFORE client fetching data
 function auth(req, res, next) {
-  console.log(req.headers);
+  console.log(req.session);
 
-  if (! req.signedCookies.user) {
+  // if (! req.signedCookies.user) {
+  if (! req.session.user) {
     var authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -63,7 +73,8 @@ function auth(req, res, next) {
 
     if (username === 'admin' && password === 'password') {
       // SET COOKIE here
-      res.cookie('user','admin',{signed: true});
+      // res.cookie('user','admin',{signed: true});
+      req.session.user = 'admin';
       next(); // pass to next middleware
     } else {
       var err = new Error("Not authorized");
@@ -73,7 +84,8 @@ function auth(req, res, next) {
     }
   } else {
     //already set cookie
-    if (req.signedCookies.user === 'admin'){
+    // if (req.signedCookies.user === 'admin'){
+    if (req.session.user === 'admin'){
       next();
     } else {
       var err = new Error("You are not athenticated");
