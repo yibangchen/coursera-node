@@ -15,21 +15,39 @@ db.once('open', () => {
         name: 'Uthappizza',
         description: 'test'
     })
-        .then((dish) => {
-            console.log(dish);
+    .then((dish) => {
+        console.log(dish);
 
-            return Dishes.find({}).exec();
+        // update a dish
+        return Dishes.findByIdAndUpdate(dish._id, {
+            $set: {description: 'updated test'}
+        }, {
+            new: true
         })
-        .then((dishes) => {
-            console.log(dishes);
+        .exec();
+    })
+    .then((dish) => {
+        console.log(dish);
 
-            return db.collection('dishes').drop();
-        })
-        .then(() => {
-            return db.close();
-        })
-        .catch((err) => {
-            console.log(err);
+        // add/ insert a comment
+        dish.comments.push({
+            rating: 5,
+            comment: 'This is a great place!',
+            author: 'Tulippy Cheung'
         });
+
+        return dish.save();
+        // return db.collection('dishes').drop();
+    })
+    .then((dish) => {
+        console.log(dish);
+        return db.collection('dishes').drop();
+    })
+    .then(() => {
+        return db.close();
+    })
+    .catch((err) => {
+        console.log(err);
+    });
 
 });
