@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
+var passport = require('passport');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -43,6 +44,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));	// FOR Forms
 //app.use(cookieParser('abcde-12345-yuidk-14235')); // set cookie secret
+
 app.use(session({
   name: 'session-id',
   secret: 'abcde-12345-yuidk-14235',
@@ -51,58 +53,45 @@ app.use(session({
   store: new FileStore()
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use('/', index);
+app.use('/users', users);
+
 //Authentication BEFORE client fetching data
 function auth(req, res, next) {
+
+  if (! req.user) {
+    var err = new Error("You need to provide credentials");
+    err.status = 403;
+    next(err);  // skip all the way to error handler
+  } else {
+    next();
+  }
+  /*
   console.log(req.session);
 
-  // if (! req.signedCookies.user) {
   if (! req.session.user) {
-    var authHeader = req.headers.authorization;
-
-    if (!authHeader) {
-      // client did not provide login
-      var err = new Error("You need to provide credentials");
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      next(err);  // skip all the way to error handler
-    }
-
-    var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':'); // get the encoded string
-    var username = auth[0];
-    var password = auth[1];
-
-    if (username === 'admin' && password === 'password') {
-      // SET COOKIE here
-      // res.cookie('user','admin',{signed: true});
-      req.session.user = 'admin';
-      next(); // pass to next middleware
-    } else {
-      var err = new Error("Not authorized");
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      next(err);
-    }
+    var err = new Error("You need to provide credentials");
+    err.status = 403;
+    next(err);  // skip all the way to error handler
   } else {
-    //already set cookie
-    // if (req.signedCookies.user === 'admin'){
-    if (req.session.user === 'admin'){
+    if (req.session.user === 'authenticated'){
       next();
     } else {
       var err = new Error("You are not athenticated");
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
+      err.status = 403;
       next(err);  // skip all the way to error handler      
     }
   }
-
+  */
 }
 
 app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', index);
-app.use('/users', users);
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
