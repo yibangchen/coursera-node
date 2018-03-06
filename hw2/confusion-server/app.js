@@ -6,7 +6,10 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
+
 var passport = require('passport');
+var authenticate = require('./authenticate');
+var config = require('./config');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -22,7 +25,7 @@ const Dishes = require('./models/dishes');
 const Promotions = require('./models/promotions');
 const Leaders = require('./models/leaders');
 
-const url = 'mongodb://localhost:27017/conFusion';
+const url = config.mongoUrl;
 mongoose.connect(url);
 
 var db = mongoose.connection;
@@ -45,26 +48,29 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));	// FOR Forms
 //app.use(cookieParser('abcde-12345-yuidk-14235')); // set cookie secret
 
-app.use(session({
-  name: 'session-id',
-  secret: 'abcde-12345-yuidk-14235',
-  saveUninitialized: false,
-  resave: false,
-  store: new FileStore()
-}));
-
+// app.use(session({
+//   name: 'session-id',
+//   secret: 'abcde-12345-yuidk-14235',
+//   saveUninitialized: false,
+//   resave: false,
+//   store: new FileStore()
+// }));
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
 
 app.use('/', index);
 app.use('/users', users);
 
+/*
 //Authentication BEFORE client fetching data
 function auth(req, res, next) {
 
+  console.log(req.user);
+
   if (! req.user) {
     var err = new Error("You need to provide credentials");
-    err.status = 403;
+    res.setHeader('WWW-Authenticate', 'Basic');
+    err.status = 401;
     next(err);  // skip all the way to error handler
   } else {
     next();
@@ -85,10 +91,11 @@ function auth(req, res, next) {
       next(err);  // skip all the way to error handler      
     }
   }
-  */
+  /
 }
 
 app.use(auth);
+*/
 
 app.use(express.static(path.join(__dirname, 'public')));
 

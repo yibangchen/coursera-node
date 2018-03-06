@@ -9,6 +9,7 @@ var User = new Schema({
 	}
 });
 
+//add username and password fields as default
 User.plugin(passportLocalMongoose);
 
 module.exports = mongoose.model('User', User);
