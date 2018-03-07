@@ -18,7 +18,6 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 exports.getToken = (user) => {
-	console.log('*******checkpoint 1');
 	return jwt.sign(user, config.secretKey, 
 		{expiresIn: 3600});
 };
